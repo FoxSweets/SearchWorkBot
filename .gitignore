@@ -1,7 +1,22 @@
+# Byte-compiled / optimized / DLL files
 __pycache__/
-__pypackages__/
-.idea/
-.env
+*.py[cod]
+*$py.class
 
+# PEP 582; used by e.g. github.com/David-OConnor/pyflow
+__pypackages__/
+
+.idea/
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# SQLite database files
 *.db
 *.sqlite3
