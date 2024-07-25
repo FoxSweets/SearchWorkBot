@@ -8,7 +8,12 @@ async def create_database():
 		query = """
 		CREATE TABLE IF NOT EXISTS "users" (
 			"id"	INTEGER,
-			"username"	TEXT
+			"username"	TEXT,
+			"name"	TEXT,
+			"age"	INTEGER,
+			"sex"	TEXT,
+			"about"	TEXT,
+			"photo"	TEXT
 		);
 		"""
 

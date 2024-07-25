@@ -7,22 +7,27 @@ from aiogram.fsm.context import FSMContext
 
 from data.database import request
 from utils.states import Form
+
 from keyboards.builders import profile
 from keyboards.reply import rmk
+from keyboards.inline import create_form
 
 router = Router()
 
 
-@router.callback_query()
-async def profile_rooms_user(callback: CallbackQuery, state: FSMContext):
+@router.callback_query(F.data == 'create_form')
+async def create_form_user(callback: CallbackQuery, state: FSMContext):
     BotDB = request.BotBD()
     await BotDB.connect()
     try:
-        callback_data = callback.data
-        if callback_data == "create":
-            await callback.message.answer("Хорошо, давайте создадим вашу анкету, я просто задам несколько вопросов")
-            await state.set_state(Form.name)
-            await callback.message.answer("Введите своё имя", reply_markup=profile(callback.message.chat.first_name))
+        member_id = callback.message.chat.id
+        await callback.message.answer("Хорошо, давайте создадим вашу анкету, я просто задам несколько вопросов")
+        await state.set_state(Form.name)
+        member_name = await BotDB.user_form_name(member_id=member_id)
+        name_list = [callback.message.chat.first_name]
+        if member_name != 'None':
+            name_list = [callback.message.chat.first_name, member_name]
+        await callback.message.answer("Введите своё имя", reply_markup=profile(name_list))
     except Exception as ex:
         print(ex)
     finally:
@@ -31,9 +36,21 @@ async def profile_rooms_user(callback: CallbackQuery, state: FSMContext):
 
 @router.message(Form.name)
 async def form_name(message: Message, state: FSMContext):
-    await state.update_data(name=message.text)
-    await state.set_state(Form.age)
-    await message.answer('Теперь укажите сколько вам лет!!', reply_markup=rmk)
+    BotDB = request.BotBD()
+    await BotDB.connect()
+    try:
+        member_id = message.from_user.id
+        await state.update_data(name=message.text)
+        await state.set_state(Form.age)
+        member_age = await BotDB.user_form_age(member_id=member_id)
+        age_list = rmk
+        if member_age != 'None':
+            age_list = profile(str(member_age))
+        await message.answer('Теперь укажите сколько вам лет!!', reply_markup=age_list)
+    except Exception as ex:
+        print(ex)
+    finally:
+        await BotDB.close_database()
 
 
 @router.message(Form.age)
@@ -48,9 +65,21 @@ async def form_age(message: Message, state: FSMContext):
 
 @router.message(Form.sex, F.text.casefold().in_(['парень', 'девушка']))
 async def form_sex(message: Message, state: FSMContext):
-    await state.update_data(sex=message.text)
-    await state.set_state(Form.about)
-    await message.answer('Расскажите о себе!', reply_markup=rmk)
+    BotDB = request.BotBD()
+    await BotDB.connect()
+    try:
+        member_id = message.from_user.id
+        await state.update_data(sex=message.text)
+        await state.set_state(Form.about)
+        member_about = await BotDB.user_form_about(member_id=member_id)
+        about_list = rmk
+        if member_about != 'None':
+            about_list = profile(str(member_about))
+        await message.answer('Расскажите о себе!', reply_markup=about_list)
+    except Exception as ex:
+        print(ex)
+    finally:
+        await BotDB.close_database()
 
 
 @router.message(Form.sex)
@@ -70,20 +99,30 @@ async def form_about(message: Message, state: FSMContext):
 
 @router.message(Form.photo, F.photo)
 async def form_photo(message: Message, state: FSMContext):
-    photo_file_id = message.photo[-1].file_id
-    data = await state.get_data()
-    await state.clear()
+    BotDB = request.BotBD()
+    await BotDB.connect()
+    try:
+        member_id = message.from_user.id
+        photo_file_id = message.photo[-1].file_id
+        data = await state.get_data()
+        await state.clear()
 
-    formatted_text = []
-    [
-        formatted_text.append(f"{key}: {value}")
-        for key, value in data.items()
-    ]
+        formatted_text = {}
+        for key, value in data.items():
+            formatted_text[key] = value
 
-    await message.answer_photo(
-        photo_file_id,
-        '\n'.join(formatted_text)
-    )
+        print(formatted_text)
+        await BotDB.update_user_form(member_id, formatted_text['name'], formatted_text['age'], formatted_text['sex'], formatted_text['about'], photo_file_id)
+
+        await message.answer_photo(
+            photo_file_id,
+            f'Имя: {formatted_text['name']}\nВозраст: {formatted_text['age']}\nПол: {formatted_text['sex']}\nО себе: {formatted_text['about']}',
+            reply_markup=create_form()
+        )
+    except Exception as ex:
+        print(ex)
+    finally:
+        await BotDB.close_database()
 
 
 @router.message(Form.photo)
