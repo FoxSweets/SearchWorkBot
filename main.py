@@ -8,7 +8,7 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.fsm.storage.memory import MemoryStorage
 
 from handlers import user_commands, text_commands
-from callback import create_form, user_form
+from callback import create_form, user_form, search_form
 from middleware.admin_mode import AdminMode
 
 from data.database import create, request
@@ -31,6 +31,7 @@ async def main():
 
     dp.include_routers(
         user_form.router,
+        search_form.router,
         create_form.router,
         user_commands.router,
         text_commands.router

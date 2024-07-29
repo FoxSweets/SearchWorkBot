@@ -14,14 +14,17 @@ class BotBD:
     async def create_user(self, member_id: int, member_name: str):
         async with self.db.execute(f"SELECT id FROM users WHERE id = ?", (member_id,)) as cursor:
             if await cursor.fetchone() is None:
-                await self.cursor.execute(f"INSERT INTO users VALUES (?, ?, ?, ?, ?, ?, ?)",
-                                          (member_id, member_name, 'None', 'None', 'None', 'None', 'None'))
+                await self.cursor.execute(f"INSERT INTO users VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                                          (member_id, member_name, 'None', 'None', 'None', 'None', 'None', 'None', 'None', 'None'))
         await self.db.commit()
 
-    async def update_user_form(self, member_id: int, name: str, age: int, sex: str, about: str, photo: str):
+    async def update_user_form(self, member_id: int, types: str, name: str, age: int, sex: str, country: str, city: str, about: str, photo: str):
+        await self.cursor.execute(f"UPDATE users SET types = ? WHERE id = ?", (types, member_id,))
         await self.cursor.execute(f"UPDATE users SET name = ? WHERE id = ?", (name, member_id,))
         await self.cursor.execute(f"UPDATE users SET age = ? WHERE id = ?", (age, member_id,))
         await self.cursor.execute(f"UPDATE users SET sex = ? WHERE id = ?", (sex, member_id,))
+        await self.cursor.execute(f"UPDATE users SET country = ? WHERE id = ?", (country, member_id,))
+        await self.cursor.execute(f"UPDATE users SET city = ? WHERE id = ?", (city, member_id,))
         await self.cursor.execute(f"UPDATE users SET about = ? WHERE id = ?", (about, member_id,))
         await self.cursor.execute(f"UPDATE users SET photo = ? WHERE id = ?", (photo, member_id,))
         await self.db.commit()
@@ -52,6 +55,16 @@ class BotBD:
         async with self.db.execute(f"SELECT about FROM users WHERE id = ?", (member_id,)) as cursor:
             user_about = await cursor.fetchone()
         return user_about[0]
+
+    async def user_form_country(self, member_id: int) -> str:
+        async with self.db.execute(f"SELECT country FROM users WHERE id = ?", (member_id,)) as cursor:
+            user_country = await cursor.fetchone()
+        return user_country[0]
+
+    async def user_form_city(self, member_id: int) -> str:
+        async with self.db.execute(f"SELECT city FROM users WHERE id = ?", (member_id,)) as cursor:
+            user_city = await cursor.fetchone()
+        return user_city[0]
 
     async def close_database(self):
         await self.cursor.close()

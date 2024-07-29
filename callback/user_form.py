@@ -20,8 +20,8 @@ async def my_user_form(callback: CallbackQuery):
             member_form = await BotDB.user_form_list(member_id)
 
             await callback.message.answer_photo(
-                member_form[6],
-                f'Имя: {member_form[2]}\nВозраст: {member_form[3]}\nПол: {member_form[4]}\nО себе: {member_form[5]}',
+                member_form[9],
+                f'Вы {member_form[2]}\n\nИмя: {member_form[3]}\nВозраст: {member_form[4]}\nПол: {member_form[5]}\nМесто проживания: {member_form[6]} | г.{member_form[7]}\n\nО себе: {member_form[8]}',
                 reply_markup=create_form()
             )
         else:
