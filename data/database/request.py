@@ -29,6 +29,13 @@ class BotBD:
         await self.cursor.execute(f"UPDATE users SET photo = ? WHERE id = ?", (photo, member_id,))
         await self.db.commit()
 
+    async def get_profiles(self, member_id: int, types: str):
+        async with self.db.execute("SELECT id FROM users WHERE types = ? AND id != ?", (types, member_id)) as cursor:
+            rows = await cursor.fetchall()
+            list_profiles = [row[0] for row in rows]
+            print(list_profiles)
+        return list_profiles
+
     async def get_user_form(self, member_id: int) -> bool:
         async with self.db.execute(f"SELECT name FROM users WHERE id = ?", (member_id,)) as cursor:
             user_name = await cursor.fetchone()

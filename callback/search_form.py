@@ -9,6 +9,8 @@ from data.database import request
 from keyboards.reply import rmk
 from keyboards.inline import choice_search_form
 
+from random import choice
+
 router = Router()
 
 
@@ -31,7 +33,16 @@ async def _search_worker(callback: CallbackQuery):
     await BotDB.connect()
     try:
         member_id = callback.message.chat.id
-        await callback.message.answer("Хорошо, ищём работника...")
+        profiles = await BotDB.get_profiles(member_id, 'Соискатель')
+        rng_profile = choice(profiles)
+
+        member_form = await BotDB.user_form_list(rng_profile)
+
+        await callback.message.answer_photo(
+            member_form[9],
+            f'Имя: {member_form[3]}\nВозраст: {member_form[4]}\nПол: {member_form[5]}\nМесто проживания: {member_form[6]} | г.{member_form[7]}\n\nО себе: {member_form[8]}',
+        )
+
     except Exception as ex:
         print(ex)
     finally:
@@ -44,7 +55,7 @@ async def _search_company(callback: CallbackQuery):
     await BotDB.connect()
     try:
         member_id = callback.message.chat.id
-        await callback.message.answer("Хорошо, ищём компанию...")
+        await callback.message.answer("ПОКА НЕТУ")
     except Exception as ex:
         print(ex)
     finally:

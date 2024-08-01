@@ -22,15 +22,15 @@ async def _create_form(callback: CallbackQuery, state: FSMContext):
     try:
         await callback.message.answer("Хорошо, давайте создадим вашу анкету, я просто задам несколько вопросов")
         await state.set_state(Form.types)
-        await callback.message.answer("Выберите кто вы? (Соискатель, Компания)",
-                                      reply_markup=profile(['Соискатель', 'Компания']))
+        await callback.message.answer("Выберите кто вы? (Соискатель, Работодатель)",
+                                      reply_markup=profile(['Соискатель', 'Работодатель']))
     except Exception as ex:
         print(ex)
     finally:
         await BotDB.close_database()
 
 
-@router.message(Form.types, F.text.casefold().in_(['соискатель', 'компания']))
+@router.message(Form.types, F.text.casefold().in_(['соискатель', 'работодатель']))
 async def form_types(message: Message, state: FSMContext):
     BotDB = request.BotBD()
     await BotDB.connect()

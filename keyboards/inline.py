@@ -44,8 +44,8 @@ def choice_search_form():
     main = InlineKeyboardMarkup(
         inline_keyboard=[
             [
-                InlineKeyboardButton(text='Рабочего', callback_data='search_worker'),
-                InlineKeyboardButton(text='Компанию', callback_data='search_company')
+                InlineKeyboardButton(text='Работник', callback_data='search_worker'),
+                InlineKeyboardButton(text='Работодатель', callback_data='search_company')
             ],
             [
                 InlineKeyboardButton(text='Выход', callback_data='exit')
